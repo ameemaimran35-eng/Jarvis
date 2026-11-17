@@ -1,9 +1,9 @@
-
 """
-config.py - Configuration management for JARVIS Module 1
+config.py - Configuration management for JARVIS (Module 1, 2 & 3)
 
 Loads environment variables from the .env file using python-dotenv.
-Reads and validates the Gemini API key without hard-coding any secrets.
+Reads and validates the Gemini API key, model selection, retry parameters,
+and optional fallback model settings without hard-coding any secrets.
 """
 
 import os
@@ -19,8 +19,23 @@ load_dotenv()
 # Read Gemini API key from environment variables
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Gemini model to use (default: gemini-flash-lite-latest)
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
+# Primary Gemini model (default: gemini-3.5-flash-lite for fast, free-tier responses)
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
+
+# Optional fallback model used if the primary model is temporarily unavailable or overloaded
+GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "").strip()
+
+# Maximum retry attempts for temporary API errors (429, 503, network drop)
+try:
+    MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
+except ValueError:
+    MAX_RETRIES = 3
+
+# Base delay in seconds for exponential backoff retry logic
+try:
+    RETRY_BASE_DELAY = float(os.getenv("RETRY_BASE_DELAY", "1.5"))
+except ValueError:
+    RETRY_BASE_DELAY = 1.5
 
 
 def validate_config():
@@ -40,4 +55,3 @@ def validate_config():
         print("ERROR: Gemini API key is missing.\n")
         print("Please add your Gemini API key to the .env file.")
         sys.exit(1)
-

@@ -1,17 +1,22 @@
-# J.A.R.V.I.S — Module 1: Basic AI Assistant
+# J.A.R.V.I.S — AI Assistant
 
-> **Note:** Module 1 is strictly a **text-based AI assistant** running in your Windows terminal. It establishes the basic Python and Gemini AI core for future modules.
+> **Current Milestone: Module 4 (Permanent Memory System)**  
+> JARVIS is an interactive, voice-enabled, terminal AI assistant powered by Google Gemini API featuring local, persistent JSON memory.
 
 ---
 
-## 1. What is JARVIS Module 1?
+## 1. What is JARVIS?
 
-Module 1 is the foundational brain of the JARVIS project. It provides:
-- A clean terminal-based chat interface.
-- Direct integration with Google's official Gemini AI SDK (`google-genai`).
-- Session-based conversation memory (so JARVIS remembers your name and recent statements while running).
-- Secure environment configuration using `python-dotenv` (keeping your API key safe and separate from source code).
-- Beginner-friendly error handling for missing keys, network disconnects, and empty inputs.
+JARVIS is built incrementally across modular milestones:
+- **Module 1 (Text Core):** Terminal-based chat, Gemini API integration, and in-memory session history.
+- **Module 2 (Voice Input):** Microphone speech capture using SpeechRecognition and PyAudio, with seamless fallback to text on microphone issues.
+- **Module 3 (Performance & Launch):** Real-time streaming responses, automatic retries with exponential backoff for 503/429 errors, fast model selection (`gemini-3.5-flash-lite`), and a one-click launcher (`start_jarvis.bat`).
+- **Module 4 (Permanent Memory System):**
+  - **Local JSON Storage:** Saves your name and explicit facts in `jarvis_memory.json`.
+  - **Memory Persistence:** Remembers your facts across application restarts.
+  - **Natural Commands:** Remember, forget, query, and clear memories using natural voice or text commands.
+  - **Context Augmentation:** Seamlessly injects saved facts into Gemini's context so questions like *"What is my name?"* or *"What am I building?"* are answered naturally.
+  - **Privacy & Safety:** Keeps memories local, ignores passwords/credentials, and never uploads files to the cloud.
 
 ---
 
@@ -20,111 +25,118 @@ Module 1 is the foundational brain of the JARVIS project. It provides:
 - **Operating System:** Windows 10 or Windows 11
 - **Python Version:** Python 3.10+ (Python 3.12 recommended)
 - **API Key:** A Google Gemini API Key from [Google AI Studio](https://aistudio.google.com/)
-- **Internet Connection:** Required to communicate with the Gemini API
+- **Microphone:** Required for default voice mode (or use `--text` for keyboard input)
+- **Internet Connection:** Required for Google Gemini and Speech-to-Text APIs
 
 ---
 
 ## 3. Project Structure
 
 ```
-JARVIS/
+c:\Users\HAROON TRADERS\Desktop\jarvis\
 │
-├── main.py           # Main application entry point & conversation loop
-├── config.py         # Loads and validates environment variables (.env)
-├── .env              # Real API key file (NEVER committed to git)
-├── .env.example      # Example template showing required environment variables
-├── requirements.txt  # Project dependencies (google-genai, python-dotenv)
-├── .gitignore        # Specifies files git should ignore (.env, venv, cache)
-└── README.md         # Documentation & setup guide
+├── start_jarvis.bat     # Windows one-click launcher (Module 3 & 4)
+├── main.py              # Main application entry point, conversation loops & streaming
+├── memory.py            # Local permanent memory system (Module 4)
+├── jarvis_memory.json   # Local persistent memory store (created automatically)
+├── config.py            # Environment configuration, validation & model settings
+├── voice_input.py       # Microphone handler & speech-to-text engine (Module 2)
+├── .env                 # Real API key file (NEVER committed to git)
+├── .env.example         # Example template showing configuration options
+├── requirements.txt     # Project dependencies
+├── .gitignore           # Ignores .env, jarvis_memory.json, venv/, __pycache__
+└── README.md            # Comprehensive documentation & setup guide
 ```
-
-### Purpose of Each File:
-- **`main.py`**: Handles user input, prints banners, invokes the Gemini chat session, remembers conversation history, and handles exit commands.
-- **`config.py`**: Loads variables from `.env`, checks that `GEMINI_API_KEY` is present, and prevents the app from running without a valid configuration.
-- **`.env`**: Stores your private `GEMINI_API_KEY`. It stays on your computer and is ignored by Git.
-- **`.env.example`**: A safe template for other developers showing what variables must be in `.env`.
-- **`requirements.txt`**: Lists the official Python libraries needed (`google-genai` and `python-dotenv`).
-- **`.gitignore`**: Prevents accidental leaks of `.env` or tracking of the `venv/` directory and compiled Python bytecode files.
-- **`README.md`**: Step-by-step instructions for installation, configuration, and usage.
 
 ---
 
-## 4. Step-by-Step Windows Setup Guide
+## 4. How to Launch JARVIS
 
-Open PowerShell or Command Prompt in the project folder (`c:\Users\HAROON TRADERS\Desktop\jarvis`) and run:
+### Option A: Using the One-Click Launcher (Recommended)
 
-### Step 1: Verify Python Installation
-```powershell
-python --version
-```
-*(Ensure Python 3.10 or higher is displayed)*
+1. **Default Voice Mode:**
+   - Double-click **`start_jarvis.bat`** in Windows File Explorer, or run in terminal:
+     ```cmd
+     start_jarvis.bat
+     ```
+2. **Text Mode:**
+   - Run in PowerShell or Command Prompt:
+     ```cmd
+     start_jarvis.bat --text
+     ```
 
-### Step 2: Create a Virtual Environment
-```powershell
-python -m venv venv
-```
-This creates an isolated `venv` folder where dependencies are safely installed.
+### Option B: Using the Python Virtual Environment Directly
 
-### Step 3: Activate the Virtual Environment
-On Windows PowerShell:
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-*(If you see an execution policy warning in PowerShell, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` first)*
-
-On Windows Command Prompt (CMD):
-```cmd
-venv\Scripts\activate.bat
-```
-
-When activated, you will see `(venv)` at the beginning of your command prompt.
-
-### Step 4: Install Dependencies
-```powershell
-pip install -r requirements.txt
-```
-
-### Step 5: Configure Your Gemini API Key
-1. Open the `.env` file in the project folder with any text editor (Notepad, VS Code, etc.).
-2. Replace `YOUR_API_KEY_HERE` with your actual Gemini API key obtained from [Google AI Studio](https://aistudio.google.com/):
-   ```env
-   GEMINI_API_KEY=AIzaSy...your_actual_key_here...
+1. **Voice Mode (Default):**
+   ```powershell
+   ./venv/Scripts/python.exe main.py
    ```
-3. Save the `.env` file.
+2. **Text Mode:**
+   ```powershell
+   ./venv/Scripts/python.exe main.py --text
+   ```
 
-> **Security Warning:** Never share your API key, commit `.env` to GitHub, or paste your key into public chats.
-
-### Step 6: Run JARVIS
-```powershell
-python main.py
-```
+### Exit Commands
+At any time in voice mode or text mode, simply say or type:
+- `exit`
+- `quit`
+- `bye`
+- `goodbye`
 
 ---
 
-## 5. Example Interaction
+## 5. Permanent Memory Commands (Module 4)
 
+Permanent memory works in **both Voice Mode and Text Mode**. JARVIS only saves information when explicitly asked.
+
+| Action | Example Command | Expected Response |
+| :--- | :--- | :--- |
+| **Save Name** | `Remember my name is Ameema.` | *"JARVIS: I will remember that your name is Ameema."* |
+| **Save Fact** | `Remember that I am learning Python.` | *"JARVIS: I will remember that you are learning Python."* |
+| **Save Project** | `Remember that I am building JARVIS.` | *"JARVIS: I will remember that you are building JARVIS."* |
+| **Ask Stored Name** | `What is my name?` | *(Gemini answers)* *"JARVIS: Your name is Ameema."* |
+| **List Memories** | `What do you remember about me?` | Displays formatted list of all saved facts. |
+| **Forget Fact** | `Forget my learning goal.` | *"JARVIS: I have forgotten: 'learning Python'."* |
+| **Forget Name** | `Forget my name.` | *"JARVIS: I have forgotten your name."* |
+| **Clear All Memories** | `Clear all my memory.` | Asks for confirmation (`yes/no`) before wiping. |
+
+---
+
+## 6. Privacy & Safety Features
+
+- **Local Storage Only:** All memories reside solely inside `jarvis_memory.json` on your computer.
+- **Sensitive Information Filter:** If you accidentally ask JARVIS to remember a password, API key, token, or credit card, JARVIS refuses to save it to protect your privacy.
+- **Git Protection:** `jarvis_memory.json` is automatically listed in `.gitignore` so your personal details are never uploaded to GitHub.
+- **Corrupted File Recovery:** If `jarvis_memory.json` is accidentally corrupted or empty, JARVIS loads safe defaults without crashing.
+
+---
+
+## 7. Example Interaction (Across Application Restarts)
+
+### Session 1: Saving Memories
 ```text
-========================================
-J.A.R.V.I.S
-Basic AI Assistant
-==================
-# Type 'exit' to quit.
+You: Remember my name is Ameema.
+JARVIS: I will remember that your name is Ameema.
 
-You: Hello Jarvis
+You: Remember that I am learning Python.
+JARVIS: I will remember that you are learning Python.
 
-JARVIS: Hello! How may I assist you today?
+You: exit
+JARVIS: Goodbye. Shutting down.
+```
 
-You: My name is Ameema.
+*(You close the application, shut down your computer, and return the next day)*
 
-JARVIS: Nice to meet you, Ameema. How can I help you today?
-
+### Session 2: Instant Memory Recall
+```text
 You: What is my name?
+JARVIS is thinking...
+JARVIS: Your name is Ameema. How may I assist you today?
 
-JARVIS: Your name is Ameema.
-
-You: What is Python?
-
-JARVIS: Python is a popular, high-level programming language known for its simplicity and readability.
+You: What do you remember about me?
+JARVIS: Here is what I remember about you:
+- Name: Ameema
+- You are learning Python
 
 You: exit
 JARVIS: Goodbye. Shutting down.
@@ -132,23 +144,9 @@ JARVIS: Goodbye. Shutting down.
 
 ---
 
-## 6. Current Limitations (Module 1)
+## 8. What is NOT Included (Reserved for Future Modules)
 
-Module 1 is intentionally scoped to establish a rock-solid, lightweight foundation:
-- **Session-only memory:** Conversation history is stored in memory during the running session. Exiting the program resets conversation memory.
-- **Text-only:** Input and output are strictly text in the terminal.
-- **Single AI Provider:** Uses official Google Gemini API only.
-
----
-
-## 7. What is NOT Included (Reserved for Future Modules)
-
-To keep Module 1 simple and beginner-friendly, the following features are intentionally **not** included:
-- Voice recognition / Microphone input (Speech-to-Text)
-- Text-to-Speech (TTS) / ElevenLabs
-- Futuristic HUD, 3D avatar, or GUI (Tkinter, PyQt, Electron, React)
-- Operating system control or automation (mouse, keyboard, files, system scripts)
-- Web scraping or browser automation
-- Long-term persistent databases (SQL, Vector databases)
-- Autonomous coding agents or self-upgrading routines
-- Multiple competing LLM providers
+- Text-to-Speech (JARVIS speaking aloud through computer speakers)
+- Wake-word detection ("Hey JARVIS")
+- Operating system automation (mouse, keyboard, or local files)
+- Graphical user interface (GUI) or HUD

@@ -1,6 +1,9 @@
 # Environment variables
 .env
 
+# Permanent memory file
+jarvis_memory.json
+
 # Virtual environment
 venv/
 ENV/
